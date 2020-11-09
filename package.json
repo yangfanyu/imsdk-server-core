@@ -1,0 +1,58 @@
+{
+  "name": "imsdk-server-core",
+  "version": "1.0.27",
+  "description": "轻量级Web服务器框架、WebSocket服务器框架。采用Typescript编写，简单易用。",
+  "main": "build/index.js",
+  "scripts": {
+    "clean": "rm -rf ./build",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yangfanyu/imsdk-server-core.git"
+  },
+  "keywords": [
+    "即时通讯",
+    "Web服务器",
+    "WebSocket服务器",
+    "Typescript"
+  ],
+  "author": "yangfanyu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yangfanyu/imsdk-server-core/issues"
+  },
+  "homepage": "https://github.com/yangfanyu/imsdk-server-core#readme",
+  "dependencies": {
+    "@types/compression": "^1.7.0",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/crypto-js": "^4.0.1",
+    "@types/express": "^4.17.11",
+    "@types/mongodb": "^3.6.12",
+    "@types/multer": "^1.4.5",
+    "@types/uuid": "^8.3.0",
+    "@types/ws": "^7.4.1",
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
+    "bufferutil": "^4.0.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.5",
+    "crc": "^3.8.0",
+    "crypto-js": "^4.0.0",
+    "express": "^4.17.1",
+    "express-xml-bodyparser": "^0.3.0",
+    "helmet": "^4.4.1",
+    "log4js": "^6.3.0",
+    "mongodb": "^3.6.6",
+    "multer": "^1.4.2",
+    "saslprep": "^1.0.3",
+    "utf-8-validate": "^5.0.4",
+    "uuid": "^8.3.2",
+    "ws": "^7.4.4",
+    "xml2js": "^0.4.23"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.3",
+    "utf-8-validate": "^5.0.4"
+  }
+}

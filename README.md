@@ -1,2 +1,4 @@
 # imsdk-server-core
-轻量级Web服务器、WebSocket服务器框架。采用Typescript编写，支持集群，简单易用。该项目是从自己多年的即时通讯项目中抽离出来的基本框架。正在完善中……
+轻量级Web服务器框架、WebSocket服务器框架。采用Typescript编写，简单易用。
+
+[Dart客户端](https://github.com/yangfanyu/imsdk-client-core)
