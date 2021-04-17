@@ -405,7 +405,11 @@ export class MongoMan {
      * @param hexstr 
      */
     public hexstr2ObjectId(hexstr: string): ObjectId {
-        return ObjectId.createFromHexString(hexstr);
+        try {
+            return ObjectId.createFromHexString(hexstr);
+        } catch (e) {
+            return ObjectId.createFromHexString('000000000000000000000000');
+        }
     }
     public get context(): EnvContext { return this._context; }
     public get client(): MongoClient { return this._client; };
