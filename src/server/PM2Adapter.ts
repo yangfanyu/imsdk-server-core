@@ -129,7 +129,7 @@ export class PM2Adapter {
         if (!this.mkdirsSync(dirname)) {
             throw Error('cannot create dir ' + dirname);
         }
-        let filepath = dirname + 'ecosystem' + (json ? '.json' : '.config.js');
+        const filepath = dirname + 'ecosystem' + (json ? '.json' : '.config.js');
         fs.writeFileSync(filepath, (json ? '' : 'module.exports = ') + JSON.stringify({ apps: this.getApps() }, null, 4));
         if (this._logLevel === 'base' || this._logLevel === 'full') {
             console.log('save to -> ', filepath, ' finished.');

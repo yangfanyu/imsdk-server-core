@@ -241,10 +241,10 @@ export class WssBridge {
         //秒数自增
         this._timerInc++;
         //清除超时的请求
-        let time: number = Date.now();
-        let list: string[] = [];
+        const time: number = Date.now();
+        const list: string[] = [];
         for (let reqId in this._requests) {
-            let request: WssBridgeRequest = this._requests[reqId];
+            const request: WssBridgeRequest = this._requests[reqId];
             if (time - request.time > this._timeout) {
                 request.callError(new WssBridgeResponse(504, 'Gateway Timeout'));
                 list.push(reqId);
@@ -273,7 +273,7 @@ export class WssBridge {
     private sendPackData(pack: WssBridgePackData) {
         if (this._expired) return;
         if (this.isConnected()) {
-            let data = WssBridgePackData.serialize(pack, this._pwd, this._binary);
+            const data = WssBridgePackData.serialize(pack, this._pwd, this._binary);
             if (!data) {
                 if (this._onerror) this._onerror.call(this._context, 'Serialize Error', this._params);
                 return;
@@ -283,7 +283,7 @@ export class WssBridge {
         }
     }
     private readPackData(data: any) {
-        let pack = WssBridgePackData.deserialize(data, this._pwd);
+        const pack = WssBridgePackData.deserialize(data, this._pwd);
         if (!pack) {
             if (this._onerror) this._onerror.call(this._context, 'Deserialize Error', this._params);
             return;
@@ -297,13 +297,13 @@ export class WssBridge {
                 break;
             case WssBridgePackData.ROUTE_RESPONSE:
                 //客户端请求响应
-                let request: WssBridgeRequest = this._requests[pack.reqId];
+                const request: WssBridgeRequest = this._requests[pack.reqId];
                 if (!request) return;//超时的响应，监听器已经被_timer删除
                 this._netDelay = Date.now() - request.time;//更新网络延迟
                 if (this._logLevel === WssBridge.LOG_LEVEL_ALL) console.log('net delay:', this._netDelay + 'ms');
-                let message = pack.message || {};
-                let resp = new WssBridgeResponse(message.code, message.data);
-                if (resp.code === 200) {
+                const message = pack.message || {};
+                const resp = new WssBridgeResponse(message.code, message.data);
+                if (resp.ok) {
                     request.callSuccess(resp);
                 } else {
                     request.callError(resp);
@@ -403,7 +403,7 @@ export class WssBridge {
      * @param params 触发回调函数时会传回这个参数
      */
     public request(route: string, message: any, onsuccess?: WssBridgeRequestCallback, onerror?: WssBridgeRequestCallback, context?: any, params?: any[]) {
-        let reqId = this._reqIdInc++;
+        const reqId = this._reqIdInc++;
         if (onsuccess || onerror) this._requests[reqId] = new WssBridgeRequest(onsuccess, onerror, context, params);//有监听器的放入请求队列
         this.sendPackData(new WssBridgePackData(route, reqId, message));
     }
@@ -429,20 +429,20 @@ export class WssBridge {
      * @param onmessage 要删除的监听器。不传这个参数则删除route对应的全部路由
      */
     public removeListener(route: string, onmessage?: WssBridgeListenerCallback) {
-        let listeners: WssBridgeListener[] = this._listeners[route];
+        const listeners: WssBridgeListener[] = this._listeners[route];
         if (!listeners) return;
         if (onmessage === undefined) {
             delete this._listeners[route];//删除该路由的全部监听
         } else {
-            let list: WssBridgeListener[] = [];
+            const list: WssBridgeListener[] = [];
             for (let i = 0; i < listeners.length; i++) {
-                let item = listeners[i];
+                const item = listeners[i];
                 if (item.onmessage === onmessage) {
                     list.push(item);
                 }
             }
             while (list.length > 0) {
-                let index = listeners.indexOf(list.pop());
+                const index = listeners.indexOf(list.pop());
                 if (index >= 0) {
                     listeners.splice(index, 1);
                 }
@@ -457,11 +457,11 @@ export class WssBridge {
      * @param pack 路由包装实例
      */
     public triggerEvent(pack: WssBridgePackData) {
-        let listeners: WssBridgeListener[] = this._listeners[pack.route];
+        const listeners: WssBridgeListener[] = this._listeners[pack.route];
         if (!listeners) return;
-        let oncelist: WssBridgeListener[] = [];//删除只触发一次的监听
+        const oncelist: WssBridgeListener[] = [];//删除只触发一次的监听
         for (let i = 0; i < listeners.length; i++) {
-            let item = listeners[i];
+            const item = listeners[i];
             item.callMessage(pack.message);
             if (item.once) {
                 oncelist.push(item);

@@ -232,7 +232,7 @@ export class WssServer {
      * @param message 
      */
     public pushSession(uid: WssUIDLike, route: string, message: any) {
-        let session = this._sessionMap[uid.toString()];
+        const session = this._sessionMap[uid.toString()];
         if (!session) return;
         const pack = new WssBridgePackData(route, undefined, message);
         const data = WssBridgePackData.serialize(pack, this._config.pwd, this._config.binary);
@@ -508,7 +508,7 @@ export class WssServer {
      * @param request 
      */
     private _onWebSocketConnection(socket: WebSocket, request: http.IncomingMessage) {
-        let session = new WssSession(socket, this._context.getIPV4({ headers: request.headers, ip: request.connection.remoteAddress }));
+        const session = new WssSession(socket, this._context.getIPV4({ headers: request.headers, ip: request.connection.remoteAddress }));
         this._socketMap[session.id] = session;//绑定到_socketMap
         socket.binaryType = 'arraybuffer';//指定读取格式为arraybuffer
         socket.on('message', (data) => {
@@ -537,7 +537,7 @@ export class WssServer {
      * @param data 
      */
     private _onWebSocketMessage(session: WssSession, data: ArrayBuffer | string) {
-        let pack = WssBridgePackData.deserialize(data, this._config.pwd);
+        const pack = WssBridgePackData.deserialize(data, this._config.pwd);
         //解析包数据
         if (!pack) {
             this._logger.error('_onWebSocketMessage:', session.ip, session.id, session.uid, RouteCode.CODE_PARSE.code, data);
@@ -681,6 +681,10 @@ export class WssServer {
      * 返回Logger实例
      */
     public get logger() { return this._logger; }
+    public get wssapp() { return this._wssapp; }
+    public get server() { return this._server; }
+    public get wssPwd() { return this._config.pwd; }
+    public get wssSecret() { return this._config.secret; }
 }
 interface ServerCyclerListener { (server: WssServer, totalSocket: number, totalSession: number): void; }
 interface SessionCloseListener { (server: WssServer, session: WssSession, code: number, reason: string): void; }
