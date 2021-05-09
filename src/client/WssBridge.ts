@@ -186,6 +186,7 @@ export class WssBridge {
     private _expired: boolean;//是否已经销毁
     //预解码器
     private _listenerDecoder: WssBridgeListenerDecoder;
+    private _listenerContext: any;
     //状态监听
     private _onopen: WssBridgeOnopen;
     private _onclose: WssBridgeOnclose;
@@ -459,8 +460,9 @@ export class WssBridge {
      * 设置监听器的前置解码器，该解码器将在addListener设置的监听器回调之前调用
      * * @param listenerDecoder 自定义解码器
      */
-    public setListenerDecoder(listenerDecoder: WssBridgeListenerDecoder) {
+    public setListenerDecoder(listenerDecoder: WssBridgeListenerDecoder, listenerContext?: any) {
         this._listenerDecoder = listenerDecoder;
+        this._listenerContext = listenerContext || this;
     }
     /**
      * 手动触发pack.route对应的全部监听器
@@ -470,7 +472,7 @@ export class WssBridge {
         const listeners: WssBridgeListener[] = this._listeners[pack.route];
         if (!listeners) return;
         const oncelist: WssBridgeListener[] = [];//删除只触发一次的监听
-        const message = !this._listenerDecoder ? pack.message : this._listenerDecoder(pack);
+        const message = !this._listenerDecoder ? pack.message : this._listenerDecoder.call(this._listenerContext, pack);
         for (let i = 0; i < listeners.length; i++) {
             const item = listeners[i];
             item.callMessage(message);
