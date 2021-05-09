@@ -470,13 +470,10 @@ export class WssBridge {
         const listeners: WssBridgeListener[] = this._listeners[pack.route];
         if (!listeners) return;
         const oncelist: WssBridgeListener[] = [];//删除只触发一次的监听
+        const message = !this._listenerDecoder ? pack.message : this._listenerDecoder(pack);
         for (let i = 0; i < listeners.length; i++) {
             const item = listeners[i];
-            if (!this._listenerDecoder) {
-                item.callMessage(pack.message);
-            } else {
-                item.callMessage(this._listenerDecoder(pack));
-            }
+            item.callMessage(message);
             if (item.once) {
                 oncelist.push(item);
             }
