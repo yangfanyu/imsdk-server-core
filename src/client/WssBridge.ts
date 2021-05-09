@@ -4,6 +4,7 @@
 import WebSocket from 'ws';
 import CryptoJS from 'crypto-js';
 
+export type WssBridgeListenerDecoder = (packData: WssBridgePackData) => any;
 export type WssBridgeListenerCallback = (message: any, params?: any[]) => void;
 export type WssBridgeRequestCallback = (resp: WssBridgeResponse, params?: any[]) => void;
 export type WssBridgeOnopen = (params?: any[]) => void;
@@ -183,6 +184,8 @@ export class WssBridge {
     private _socket: WebSocket;//套接字
     private _paused: boolean;//是否暂停重连
     private _expired: boolean;//是否已经销毁
+    //预解码器
+    private _listenerDecoder: WssBridgeListenerDecoder;
     //状态监听
     private _onopen: WssBridgeOnopen;
     private _onclose: WssBridgeOnclose;
@@ -453,6 +456,13 @@ export class WssBridge {
         }
     }
     /**
+     * 设置监听器的前置解码器，该解码器将在addListener设置的监听器回调之前调用
+     * * @param listenerDecoder 自定义解码器
+     */
+    public setListenerDecoder(listenerDecoder: WssBridgeListenerDecoder) {
+        this._listenerDecoder = listenerDecoder;
+    }
+    /**
      * 手动触发pack.route对应的全部监听器
      * @param pack 路由包装实例
      */
@@ -462,7 +472,11 @@ export class WssBridge {
         const oncelist: WssBridgeListener[] = [];//删除只触发一次的监听
         for (let i = 0; i < listeners.length; i++) {
             const item = listeners[i];
-            item.callMessage(pack.message);
+            if (!this._listenerDecoder) {
+                item.callMessage(pack.message);
+            } else {
+                item.callMessage(this._listenerDecoder(pack));
+            }
             if (item.once) {
                 oncelist.push(item);
             }

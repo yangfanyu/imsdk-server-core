@@ -20,6 +20,16 @@ export interface WssServerConfig {
     reqIdCache?: number;//校验重复包的包ID缓存数量 ms
 }
 
+export interface ServerCyclerListener { (server: WssServer, totalSocket: number, totalSession: number): void; }
+export interface SessionCloseListener { (server: WssServer, session: WssSession, code: number, reason: string): void; }
+export interface RouterListener { (server: WssServer, session: WssSession, pack: WssBridgePackData): void; }
+export interface RemoteListener { (server: WssServer, session: WssSession, pack: WssBridgePackData): void; }
+export interface PushChannelCustomCallback { (uid: WssUIDLike, message: any): any; }
+export interface ClusterDispatchCallback { (cluster: ClusterNode[], tid: WssUIDLike, innerData: InnerData): number; }
+export interface ClusterNode { grp: string; url: string; rmc: WssBridge; }
+export interface GroupChannel { count: number; sessions: { [key: string]: WssSession }; }
+export interface InnerData { tid?: WssUIDLike, route?: string; message?: any; word?: string; sign?: any; }
+
 export class WssServer {
     private _context: EnvContext;
     private _config: WssServerConfig;
@@ -206,9 +216,8 @@ export class WssServer {
         const channel = this._channelMap[gid.toString()];
         if (!channel) return;
         for (let id in channel.sessions) {
-            if (channel.sessions.hasOwnProperty(id)) {
-                channel.sessions[id].quitChannel(gid);
-            }
+            const session = channel.sessions[id];
+            session.quitChannel(gid);
         }
         delete this._channelMap[gid.toString()];
         this._logger.debug('deleteChannel:', gid);
@@ -268,10 +277,8 @@ export class WssServer {
         const pack = new WssBridgePackData(route, undefined, message);
         const data = WssBridgePackData.serialize(pack, this._config.pwd, this._config.binary);
         for (let id in channel.sessions) {
-            if (channel.sessions.hasOwnProperty(id)) {
-                const session = channel.sessions[id];
-                session.send(data, this._getSendOptions());
-            }
+            const session = channel.sessions[id];
+            session.send(data, this._getSendOptions());
         }
         this._logger.debug('pushChannel:', gid, pack);
     }
@@ -286,13 +293,11 @@ export class WssServer {
         const channel = this._channelMap[gid.toString()];
         if (!channel) return;
         for (let id in channel.sessions) {
-            if (channel.sessions.hasOwnProperty(id)) {
-                const session = channel.sessions[id];
-                const pack = new WssBridgePackData(route, undefined, customCallback(session.uid, message));
-                const data = WssBridgePackData.serialize(pack, this._config.pwd, this._config.binary);
-                session.send(data, this._getSendOptions());
-                this._logger.debug('pushChannelCustom:', session.ip, session.id, session.uid, gid, pack);
-            }
+            const session = channel.sessions[id];
+            const pack = new WssBridgePackData(route, undefined, customCallback(session.uid, message));
+            const data = WssBridgePackData.serialize(pack, this._config.pwd, this._config.binary);
+            session.send(data, this._getSendOptions());
+            this._logger.debug('pushChannelCustom:', session.ip, session.id, session.uid, gid, pack);
         }
     }
     /**
@@ -304,10 +309,8 @@ export class WssServer {
         const pack = new WssBridgePackData(route, undefined, message);
         const data = WssBridgePackData.serialize(pack, this._config.pwd, this._config.binary);
         for (let uid in this._sessionMap) {
-            if (this._sessionMap.hasOwnProperty(uid)) {
-                const session = this._sessionMap[uid];
-                session.send(data, this._getSendOptions());
-            }
+            const session = this._sessionMap[uid];
+            session.send(data, this._getSendOptions());
         }
         this._logger.debug('broadcast:', pack);
     }
@@ -438,11 +441,9 @@ export class WssServer {
         }, this._config.cycle);
         //连接关联的集群节点
         for (let appName in this._clusterMap) {
-            if (this._clusterMap.hasOwnProperty(appName)) {
-                const cluster = this._clusterMap[appName];
-                for (let i = 0; i < cluster.length; i++) {
-                    this._connectForCluster(cluster[i]);
-                }
+            const cluster = this._clusterMap[appName];
+            for (let i = 0; i < cluster.length; i++) {
+                this._connectForCluster(cluster[i]);
             }
         }
         //启动服务器
@@ -463,11 +464,9 @@ export class WssServer {
         }
         //断开关联的集群节点
         for (let appName in this._clusterMap) {
-            if (this._clusterMap.hasOwnProperty(appName)) {
-                const cluster = this._clusterMap[appName];
-                for (let i = 0; i < cluster.length; i++) {
-                    cluster[i].rmc.disconnect();
-                }
+            const cluster = this._clusterMap[appName];
+            for (let i = 0; i < cluster.length; i++) {
+                cluster[i].rmc.disconnect();
             }
         }
         //关闭服务器
@@ -483,14 +482,12 @@ export class WssServer {
         let totalSocket = 0;
         let totalSession = 0;
         for (let id in this._socketMap) {
-            if (this._socketMap.hasOwnProperty(id)) {
-                const session = this._socketMap[id];
-                if (session.isExpired(this._config.timeout)) {
-                    session.close(RouteCode.CODE_TIMEOUT.code, RouteCode.CODE_TIMEOUT.data);//清除超时的链接
-                } else {
-                    totalSocket += 1;
-                    totalSession += session.isBinded() ? 1 : 0;
-                }
+            const session = this._socketMap[id];
+            if (session.isExpired(this._config.timeout)) {
+                session.close(RouteCode.CODE_TIMEOUT.code, RouteCode.CODE_TIMEOUT.data);//清除超时的链接
+            } else {
+                totalSocket += 1;
+                totalSession += session.isBinded() ? 1 : 0;
             }
         }
         this._logger.info('_onServerLifeCycle:', 'totalSocket->', totalSocket, 'totalSession->', totalSession);
@@ -686,15 +683,6 @@ export class WssServer {
     public get wssPwd() { return this._config.pwd; }
     public get wssSecret() { return this._config.secret; }
 }
-interface ServerCyclerListener { (server: WssServer, totalSocket: number, totalSession: number): void; }
-interface SessionCloseListener { (server: WssServer, session: WssSession, code: number, reason: string): void; }
-interface RouterListener { (server: WssServer, session: WssSession, pack: WssBridgePackData): void; }
-interface RemoteListener { (server: WssServer, session: WssSession, pack: WssBridgePackData): void; }
-interface PushChannelCustomCallback { (uid: WssUIDLike, message: any): any; }
-interface ClusterDispatchCallback { (cluster: ClusterNode[], tid: WssUIDLike, innerData: InnerData): number; }
-interface ClusterNode { grp: string; url: string; rmc: WssBridge; }
-interface GroupChannel { count: number; sessions: { [key: string]: WssSession }; }
-interface InnerData { tid?: WssUIDLike, route?: string; message?: any; word?: string; sign?: any; }
 /**
  * 状态码范围参考： https://tools.ietf.org/html/rfc6455#section-7.4.2
  * 以及：https://github.com/websockets/ws/issues/715

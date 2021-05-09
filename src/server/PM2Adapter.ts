@@ -69,40 +69,38 @@ export class PM2Adapter {
         const nodes: any = {};
         const instEnvName = 'env_' + this._appEnv;
         for (let appName in clusters) {
-            if (clusters.hasOwnProperty(appName)) {
-                const cluster = clusters[appName];
-                nodes[appName] = [];
-                for (let i = 0; i < cluster.length; i++) {
-                    const item = cluster[i];
-                    //进程的pm2属性
-                    const inst: { [key: string]: any } = {};
-                    Object.assign(inst, defaults.PM2config || {});
-                    Object.assign(inst, item.PM2config || {});
-                    inst.name = (defaults.PM2config ? defaults.PM2config.name || 'app' : 'app') + '-' + (appName + '-' + (item.port || defaults.port || i));
-                    //进程的应用参数
-                    inst[instEnvName] = {
-                        NODE_ENV: (this._appEnv === 'develop' || this._appEnv === 'development') ? 'development' : 'production',//nodejs运行环境(定义为production有利于提高性能)
-                        MYAPP_DIR: this._appDir,//应用启动根目录
-                        MYAPP_ENV: this._appEnv,//应用运行环境
-                        MYAPP_NAME: appName,//分组类型
-                        MYAPP_HOST: (item.host === undefined ? defaults.host : item.host) || null,//外网地址
-                        MYAPP_INIP: (item.inip === undefined ? defaults.inip : item.inip) || null,//内网ip
-                        MYAPP_PORT: (item.port === undefined ? defaults.port : item.port) || null,//端口号码
-                        MYAPP_SSLS: (item.ssls === undefined ? defaults.ssls : item.ssls) || null,//证书加载路径
-                        MYAPP_LINKS: (item.links === undefined ? defaults.links : item.links) || [],//需要连接的进程分组（他妈的某些版本的pm2不支持数组）
-                        MYAPP_NODES: nodes//全部节点集合
-                    };
-                    //集群的节点数据
-                    nodes[appName].push({
-                        host: inst[instEnvName].MYAPP_HOST,
-                        inip: inst[instEnvName].MYAPP_INIP,
-                        port: inst[instEnvName].MYAPP_PORT,
-                        ssls: !!(inst[instEnvName].MYAPP_SSLS)
-                    });
-                    //对应主机的apps
-                    if (!hostBind || inst[instEnvName].MYAPP_HOST === this._mchHost) {
-                        apps.push(inst);
-                    }
+            const cluster = clusters[appName];
+            nodes[appName] = [];
+            for (let i = 0; i < cluster.length; i++) {
+                const item = cluster[i];
+                //进程的pm2属性
+                const inst: { [key: string]: any } = {};
+                Object.assign(inst, defaults.PM2config || {});
+                Object.assign(inst, item.PM2config || {});
+                inst.name = (defaults.PM2config ? defaults.PM2config.name || 'app' : 'app') + '-' + (appName + '-' + (item.port || defaults.port || i));
+                //进程的应用参数
+                inst[instEnvName] = {
+                    NODE_ENV: (this._appEnv === 'develop' || this._appEnv === 'development') ? 'development' : 'production',//nodejs运行环境(定义为production有利于提高性能)
+                    MYAPP_DIR: this._appDir,//应用启动根目录
+                    MYAPP_ENV: this._appEnv,//应用运行环境
+                    MYAPP_NAME: appName,//分组类型
+                    MYAPP_HOST: (item.host === undefined ? defaults.host : item.host) || null,//外网地址
+                    MYAPP_INIP: (item.inip === undefined ? defaults.inip : item.inip) || null,//内网ip
+                    MYAPP_PORT: (item.port === undefined ? defaults.port : item.port) || null,//端口号码
+                    MYAPP_SSLS: (item.ssls === undefined ? defaults.ssls : item.ssls) || null,//证书加载路径
+                    MYAPP_LINKS: (item.links === undefined ? defaults.links : item.links) || [],//需要连接的进程分组（他妈的某些版本的pm2不支持数组）
+                    MYAPP_NODES: nodes//全部节点集合
+                };
+                //集群的节点数据
+                nodes[appName].push({
+                    host: inst[instEnvName].MYAPP_HOST,
+                    inip: inst[instEnvName].MYAPP_INIP,
+                    port: inst[instEnvName].MYAPP_PORT,
+                    ssls: !!(inst[instEnvName].MYAPP_SSLS)
+                });
+                //对应主机的apps
+                if (!hostBind || inst[instEnvName].MYAPP_HOST === this._mchHost) {
+                    apps.push(inst);
                 }
             }
         }
@@ -157,5 +155,4 @@ export class PM2Adapter {
     }
 
     public get encode() { return this._encode };
-
 }

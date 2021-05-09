@@ -116,7 +116,7 @@ export class WssSession {
      */
     public eachChannel(callback: (gid: WssUIDLike) => void) {
         for (let gid in this._channel) {
-            if (this._channel.hasOwnProperty(gid)) callback(gid);
+            callback(gid);
         }
     }
     /**

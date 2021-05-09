@@ -1,6 +1,6 @@
 {
   "name": "imsdk-server-core",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "轻量级Web服务器框架、WebSocket服务器框架。采用Typescript编写，简单易用。",
   "main": "build/index.js",
   "scripts": {
@@ -41,18 +41,18 @@
     "crypto-js": "^4.0.0",
     "express": "^4.17.1",
     "express-xml-bodyparser": "^0.3.0",
-    "helmet": "^4.5.0",
+    "helmet": "^4.6.0",
     "log4js": "^6.3.0",
     "mongodb": "^3.6.6",
     "multer": "^1.4.2",
     "saslprep": "^1.0.3",
-    "utf-8-validate": "^5.0.4",
+    "utf-8-validate": "^5.0.5",
     "uuid": "^8.3.2",
     "ws": "^7.4.5",
     "xml2js": "^0.4.23"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.3",
-    "utf-8-validate": "^5.0.4"
+    "utf-8-validate": "^5.0.5"
   }
 }
