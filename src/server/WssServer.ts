@@ -505,7 +505,7 @@ export class WssServer {
      * @param request 
      */
     private _onWebSocketConnection(socket: WebSocket, request: http.IncomingMessage) {
-        const session = new WssSession(socket, this._context.getIPV4({ headers: request.headers, ip: request.connection.remoteAddress }));
+        const session = new WssSession(socket, this._context.getIPV4({ headers: request.headers, ip: request.socket.remoteAddress }));
         this._socketMap[session.id] = session;//绑定到_socketMap
         socket.binaryType = 'arraybuffer';//指定读取格式为arraybuffer
         socket.on('message', (data) => {

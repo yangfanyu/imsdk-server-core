@@ -154,12 +154,24 @@ export class MongoMan {
                 //模拟单表左外连接
                 let equalsId = false;
                 join.query = join.query || {};
-                join.query.$or = [];
-                for (let i = 0; i < result.length; i++) {
-                    const param: any = {};
-                    param[join.toField] = result[i][join.fromField];
-                    equalsId = typeof param[join.toField] === 'object';
-                    join.query.$or.push(param);
+                if (join.orExp) {
+                    //使用$or查询
+                    join.query.$or = [];
+                    for (let i = 0; i < result.length; i++) {
+                        const param: any = {};
+                        param[join.toField] = result[i][join.fromField];
+                        equalsId = typeof param[join.toField] === 'object';
+                        join.query.$or.push(param);
+                    }
+                } else {
+                    //使用$in查询
+                    const toInValues: { $in: any[] } = { $in: [] };
+                    for (let i = 0; i < result.length; i++) {
+                        const fromValue = result[i][join.fromField];
+                        equalsId = typeof fromValue === 'object';
+                        toInValues.$in.push(fromValue);
+                    }
+                    (<any>join.query)[join.toField] = toInValues;
                 }
                 const joinResult = await this._db.collection(join.table, join.tableOptions).find(join.query, join.findOptions).toArray();
                 for (let i = 0; i < result.length; i++) {
@@ -422,6 +434,7 @@ interface FindJoinOpions<Z> {
     resField: string;
     table: string;
     onlyOne?: boolean;
+    orExp?: boolean;
     query?: FilterQuery<Z>;
     findOptions?: FindOneOptions<any>;
     tableOptions?: DbCollectionOptions;
