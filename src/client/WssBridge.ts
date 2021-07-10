@@ -176,7 +176,7 @@ export class WssBridge {
     private _timer: any;//秒钟计时器
     private _timerInc: number;//秒数自增量
     private _reqIdInc: number;//请求自增量
-    private _netDelay: number;//网络延迟
+    private _netDelay: number;//网络延迟（毫秒）
     private _retryCnt: number;//断线重连尝试次数
     private _listeners: { [key: string]: WssBridgeListener[] };//监听集合
     private _requests: { [key: string]: WssBridgeRequest };//请求集合
@@ -348,7 +348,7 @@ export class WssBridge {
          * 2 CLOSING - The connection is in the process of closing.
          * 3 CLOSED- The connection is closed.
          */
-        this._socket = new WebSocket(this._host, typeof module === 'object' ? { rejectUnauthorized: false } : undefined);//创建WebSocket对象
+        this._socket = new WebSocket(this._host, this.isNative() ? { rejectUnauthorized: false } : undefined);//创建WebSocket对象
         this._socket.binaryType = 'arraybuffer';
         this._socket.onopen = (e) => { this.onSocketOpen(e) };//添加连接打开侦听，连接成功会调用此方法
         this._socket.onmessage = (e) => { this.onSocketMessage(e) };//添加收到数据侦听，收到数据会调用此方法
@@ -492,7 +492,21 @@ export class WssBridge {
      * 恢复断线自动重连的功能
      */
     public resumeReconnect() { this._paused = false; }
+    /**
+     * 设置调试日志输出级别
+     * @param level 日志级别，有效值为 WssBridge.LOG_LEVEL_XXX
+     */
     public setLogLevel(level: number) { this._logLevel = level; }
+    /**
+     * 获取当前网络延迟毫秒
+     */
     public getNetDelay(): number { return this._netDelay; }
+    /**
+     * 是否已经建立网络连接
+     */
     public isConnected(): boolean { return this._socket && this._socket.readyState === WebSocket.OPEN; }
+    /**
+     * 是否为服务端node环境
+     */
+    public isNative(): boolean { return typeof module === 'object'; }
 }
